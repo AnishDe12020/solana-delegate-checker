@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: siteConfig.name,
     description: siteConfig.description,
     siteName: siteConfig.name,
-    url: "https://revokin.com",
+    url: siteConfig.url,
     images: [
       {
         url: siteConfig.opengraph,
