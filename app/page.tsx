@@ -21,6 +21,7 @@ import { toast } from "sonner"
 
 import { siteConfig } from "@/config/site"
 import { GithubIcon } from "@/components/icons"
+import { title } from "@/components/primitives"
 
 export default function Home() {
   const [walletAddress, setWalletAddress] = useState<string>()
