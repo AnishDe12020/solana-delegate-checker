@@ -27,8 +27,8 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 export default function Home() {
   const wallet = useWallet();
   const walletModal = useWalletModal();
-  const [walletAddress, setWalletAddress] = useState<string>()
-  const [tokens, setTokens] = useState<any[]>()
+  const [walletAddress, setWalletAddress] = useState<string>();
+  const [tokens, setTokens] = useState<any[]>();
 
   const { connection } = useConnection();
 
