@@ -19,11 +19,11 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
   return (
     <NextUIProvider navigate={router.push}>
-      <NextThemesProvider {...themeProps}>
-        <ReactQueryProvider>
-          <SolanaProvider>{children}</SolanaProvider>
-        </ReactQueryProvider>
-      </NextThemesProvider>
+      <SolanaProvider>
+        <NextThemesProvider {...themeProps}>
+          <ReactQueryProvider>{children}</ReactQueryProvider>
+        </NextThemesProvider>
+      </SolanaProvider>
     </NextUIProvider>
   )
 }

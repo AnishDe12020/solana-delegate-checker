@@ -10,6 +10,8 @@ import Toaster from "@/components/sonner-toaster"
 
 import { Providers } from "./providers"
 
+require('@solana/wallet-adapter-react-ui/styles.css');
+
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
