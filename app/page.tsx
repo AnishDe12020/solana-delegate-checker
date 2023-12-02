@@ -20,7 +20,7 @@ import axios from "axios"
 import { toast } from "sonner"
 
 import { siteConfig } from "@/config/site"
-import { GithubIcon } from "@/components/icons"
+import { GithubIcon, WagmiLogo } from "@/components/icons"
 import { title } from "@/components/primitives"
 
 export default function Home() {
@@ -123,6 +123,14 @@ export default function Home() {
         >
           <GithubIcon size={16} />
           GitHub
+        </Link>
+        <Link
+          isExternal
+          className={buttonStyles({ variant: "bordered", radius: "full" })}
+          href={siteConfig.links.wagmi}
+        >
+          <WagmiLogo size={16} />
+          Support Us
         </Link>
       </div>
 

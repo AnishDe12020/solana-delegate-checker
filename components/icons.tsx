@@ -212,3 +212,25 @@ export const NextUILogo: React.FC<IconSvgProps> = (props) => {
     </svg>
   );
 };
+
+export const WagmiLogo: React.FC<IconSvgProps>  = ({
+	size = 24,
+	width,
+	height,
+	...props
+}) => {
+  return (
+    <svg
+      width={16}
+      height={10}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M0 2.812L2.05 0l2.16 2.587-1.94 2.856L0 2.812zm5.895 0L7.945 0l2.16 2.587-1.94 2.856-2.27-2.631zm5.895 0L13.84 0 16 2.587l-1.94 2.856-2.27-2.631zm-8.842 3.89l2.05-2.81 2.16 2.586-1.94 2.856-2.27-2.631zm5.894 0l2.05-2.81 2.16 2.586-1.94 2.856-2.27-2.631z"
+        fill="#fff"
+      />
+    </svg>
+  )
+};
