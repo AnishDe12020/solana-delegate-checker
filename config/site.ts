@@ -4,7 +4,7 @@ export const siteConfig = {
 	name: "Revokin",
 	description: "Gain back access of all your token accounts.",
 	links: {
-		github: "https://github.com/AnishDe12020/solana-delegate-checker",
+		github: "https://github.com/KunalBagaria/revokin",
     wagmi: "https://wagmi.bio/revokin"
 	},
 };
