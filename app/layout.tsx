@@ -39,7 +39,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <head>
+        <meta property='og:image' content={siteConfig.opengraph} />
+        <meta property='twitter:image' content={siteConfig.opengraph} />
+      </head>
       <body
         className={clsx(
           "min-h-screen bg-background font-sans antialiased",
