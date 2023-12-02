@@ -19,7 +19,19 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   openGraph: {
-    url: siteConfig.opengraph
+    title: siteConfig.name,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    url: "https://revokin.com",
+    images: [
+      {
+        url: siteConfig.opengraph,
+        width: 1200,
+        height: 630,
+      }
+    ],
+    locale: 'en_US',
+    type: 'website',
   },
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
@@ -39,10 +51,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta property='og:image' content={siteConfig.opengraph} />
-        <meta property='twitter:image' content={siteConfig.opengraph} />
-      </head>
+      <head />
       <body
         className={clsx(
           "min-h-screen bg-background font-sans antialiased",
