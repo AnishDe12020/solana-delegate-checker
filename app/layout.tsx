@@ -6,7 +6,6 @@ import clsx from "clsx"
 
 import { fontSans } from "@/config/fonts"
 import { siteConfig } from "@/config/site"
-import { Navbar } from "@/components/navbar"
 import Toaster from "@/components/sonner-toaster"
 
 import { Providers } from "./providers"
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
     { media: "(prefers-color-scheme: dark)", color: "black" },
   ],
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.png",
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
@@ -48,15 +47,24 @@ export default function RootLayout({
               <Toaster />
               {children}
             </main>
-            <footer className="w-full flex items-center justify-center py-3">
+            <footer className="w-full flex items-center justify-center py-16 gap-1">
+              <span className="text-default-600">Created by</span>
               <Link
                 isExternal
-                className="flex items-center gap-1 text-current"
-                href="https://nextui-docs-v2.vercel.app?utm_source=next-app-template"
-                title="nextui.org homepage"
+                className="flex items-center text-current"
+                href="https://twitter.com/AnishDe12020"
+                title="Anish's Twitter"
               >
-                <span className="text-default-600">Powered by</span>
-                <p className="text-primary">NextUI</p>
+                <p className="text-primary">Anish De</p>
+              </Link>
+              <span className="text-default-600">and</span>
+              <Link
+                isExternal
+                className="flex items-center text-current"
+                href="https://twitter.com/kb24x7"
+                title="Kunal's Twitter"
+              >
+                <p className="text-primary">Kunal Bagaria</p>
               </Link>
             </footer>
           </div>

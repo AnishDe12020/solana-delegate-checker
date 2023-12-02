@@ -111,35 +111,22 @@ export default function Home() {
         <h1 className={title()}>
           Check and remove{" "}
           <span className={title({ color: "red" })}>nefarious</span> delegates
-          from your token accoutns
+          from your token accounts
         </h1>
-
-        {/* <h2 className={subtitle({ class: "mt-4" })}>Solana Delegate Checker</h2> */}
       </div>
 
       <div className="flex gap-3 mt-4">
         <Link
           isExternal
-          href={siteConfig.links.docs}
-          className={buttonStyles({
-            color: "primary",
-            radius: "full",
-            variant: "shadow",
-          })}
-        >
-          Documentation
-        </Link>
-        <Link
-          isExternal
           className={buttonStyles({ variant: "bordered", radius: "full" })}
           href={siteConfig.links.github}
         >
-          <GithubIcon size={20} />
+          <GithubIcon size={16} />
           GitHub
         </Link>
       </div>
 
-      <div className="flex flex-row gap-4 items-center justify-center mt-8">
+      <div className="flex flex-row gap-4 items-center justify-center mt-8 mb-8">
         <Input
           placeholder="8Dyk53...chbe88"
           className="w-64"
@@ -149,6 +136,7 @@ export default function Home() {
 
         <Button
           color="primary"
+          size="lg"
           onClick={() =>
             toast.promise(fetchTokens, {
               loading: "Fetching tokens...",
@@ -168,6 +156,7 @@ export default function Home() {
             <TableColumn>Balance</TableColumn>
             <TableColumn>Delegate</TableColumn>
             <TableColumn>Delegated Amount</TableColumn>
+            <TableColumn>Revoke Delegation</TableColumn>
           </TableHeader>
           <TableBody>
             {tokens.map((token) => (
@@ -183,8 +172,11 @@ export default function Home() {
                   <span>{token.metadata.symbol}</span>
                 </TableCell>
                 <TableCell>{token.tokenBalance}</TableCell>
-                <TableCell>{token.delegate ?? "NA"}</TableCell>
-                <TableCell>{token.delegatedAmount ?? "NA"}</TableCell>
+                <TableCell>{token.delegate ?? "N/A"}</TableCell>
+                <TableCell>{token.delegatedAmount ?? "N/A"}</TableCell>
+                <TableCell>{token.delegate ? (
+                  <Button color="primary" size="sm">Revoke</Button>
+                ) : "N/A"}</TableCell>
               </TableRow>
             ))}
           </TableBody>
