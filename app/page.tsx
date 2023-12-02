@@ -1,16 +1,27 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Button } from "@nextui-org/button"
 import { Code } from "@nextui-org/code"
 import { Input } from "@nextui-org/input"
 import { Link } from "@nextui-org/link"
 import { Snippet } from "@nextui-org/snippet"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from "@nextui-org/table"
 import { button as buttonStyles } from "@nextui-org/theme"
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
 import { useConnection } from "@solana/wallet-adapter-react"
 import { GetProgramAccountsFilter, PublicKey } from "@solana/web3.js"
 import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import { COMMON_SERVE_COMMAND_OPTIONS } from "ionic/lib/serve"
 import { toast } from "sonner"
 
 import { siteConfig } from "@/config/site"
@@ -19,25 +30,9 @@ import { subtitle, title } from "@/components/primitives"
 
 export default function Home() {
   const [walletAddress, setWalletAddress] = useState<string>()
-  const [tokens, setTokens] = useState<string[]>()
+  const [tokens, setTokens] = useState<any[]>()
 
   const { connection } = useConnection()
-
-  //   const {} = useQuery({
-  //     queryKey: ["tokens", walletAddress],
-  //     queryFn: async () => {
-  //       if (!walletAddress || walletAddress.length < 44) {
-  //         return
-  //       }
-
-  //       try {
-  //         new PublicKey(walletAddress)
-  //       } catch (e) {
-  //         toast.error("Please enter a valid wallet address")
-  //         return
-  //       }
-  //     },
-  //   })
 
   const fetchTokens = async () => {
     if (!walletAddress) {
@@ -66,23 +61,16 @@ export default function Home() {
 
     const accounts = await connection.getParsedProgramAccounts(
       TOKEN_PROGRAM_ID,
-      { filters: filters }
+      {
+        filters: filters,
+      }
     )
 
-    const accountsToShow = accounts.filter((account) => {
+    const { data: tokenList } = await axios.get("https://cache.jup.ag/tokens")
+
+    const tokensParsedInfo = accounts.map((account) => {
       const parsedAccountInfo: any = account.account.data
 
-      if (parsedAccountInfo.parsed.info.delegate) {
-        return true
-      }
-
-      const balance = parsedAccountInfo.parsed.info.tokenAmount.uiAmount
-
-      return balance > 0 && balance % 1 !== 0
-    })
-
-    const accountsParsed = accountsToShow.map((account, i) => {
-      const parsedAccountInfo: any = account.account.data
       const mintAddress: string = parsedAccountInfo.parsed.info.mint
       const tokenBalance: number =
         parsedAccountInfo.parsed.info.tokenAmount.uiAmount
@@ -96,10 +84,30 @@ export default function Home() {
         tokenBalance,
         delegatedAmount,
         delegate,
+        ata: account.pubkey.toBase58(),
       }
     })
 
-    console.log(accountsParsed)
+    const tokenListMintAddresses = tokenList.map((token: any) => token.address)
+
+    const tokensFiltered = tokensParsedInfo.filter((token) => {
+      return tokenListMintAddresses.includes(token.mintAddress)
+    })
+
+    const tokensFilteredWithMetadata = tokensFiltered.map((token) => {
+      const tokenMetadata = tokenList.find(
+        (t: any) => t.address === token.mintAddress
+      )
+
+      return {
+        ...token,
+        metadata: tokenMetadata,
+      }
+    })
+
+    console.log(tokensFilteredWithMetadata)
+
+    setTokens(tokensFilteredWithMetadata)
   }
 
   return (
@@ -157,6 +165,36 @@ export default function Home() {
           Fetch tokens
         </Button>
       </div>
+
+      {tokens && (
+        <Table aria-label="Tokens">
+          <TableHeader>
+            <TableColumn>Token</TableColumn>
+            <TableColumn>Balance</TableColumn>
+            <TableColumn>Delegate</TableColumn>
+            <TableColumn>Delegated Amount</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {tokens.map((token) => (
+              <TableRow key={token.mintAddress}>
+                <TableCell className="flex gap-2 items-center">
+                  <img
+                    src={token.metadata.logoURI}
+                    alt={token.metadata.name}
+                    width={32}
+                    height={32}
+                    className="mr-2"
+                  />
+                  <span>{token.metadata.symbol}</span>
+                </TableCell>
+                <TableCell>{token.tokenBalance}</TableCell>
+                <TableCell>{token.delegate ?? "NA"}</TableCell>
+                <TableCell>{token.delegatedAmount ?? "NA"}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </section>
   )
 }
