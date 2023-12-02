@@ -1,12 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import { Button } from "@nextui-org/button"
-import { Code } from "@nextui-org/code"
 import { Input } from "@nextui-org/input"
 import { Link } from "@nextui-org/link"
-import { Snippet } from "@nextui-org/snippet"
 import {
   Table,
   TableBody,
@@ -19,14 +16,11 @@ import { button as buttonStyles } from "@nextui-org/theme"
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
 import { useConnection } from "@solana/wallet-adapter-react"
 import { GetProgramAccountsFilter, PublicKey } from "@solana/web3.js"
-import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
-import { COMMON_SERVE_COMMAND_OPTIONS } from "ionic/lib/serve"
 import { toast } from "sonner"
 
 import { siteConfig } from "@/config/site"
 import { GithubIcon } from "@/components/icons"
-import { subtitle, title } from "@/components/primitives"
 
 export default function Home() {
   const [walletAddress, setWalletAddress] = useState<string>()
