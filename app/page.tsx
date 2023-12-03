@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@nextui-org/table"
 import { button as buttonStyles } from "@nextui-org/theme"
+import { walletNameToAddressAndProfilePicture } from "@portal-payments/solana-wallet-names"
 import { createRevokeInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
@@ -31,22 +32,28 @@ import { title } from "@/components/primitives"
 export default function Home() {
   const wallet = useWallet()
   const walletModal = useWalletModal()
-  const [walletAddress, setWalletAddress] = useState<string>()
+  const [walletInput, setWalletInput] = useState<string>()
   const [tokens, setTokens] = useState<any[]>()
 
   const { connection } = useConnection()
 
   const fetchTokens = async () => {
-    if (!walletAddress) {
-      toast.error("Please enter a valid wallet address")
-      return
+    if (!walletInput) {
+      throw Error("Please enter a valid wallet address")
     }
 
+    let walletAddress
+
     try {
-      new PublicKey(walletAddress)
+      walletAddress = new PublicKey(walletInput).toBase58()
     } catch (e) {
-      toast.error("Please enter a valid wallet address")
-      return
+      walletAddress = (
+        await walletNameToAddressAndProfilePicture(connection, walletInput)
+      ).walletAddress
+
+      if (!walletAddress) {
+        throw Error("Please enter a valid wallet address")
+      }
     }
 
     const filters: GetProgramAccountsFilter[] = [
@@ -115,7 +122,7 @@ export default function Home() {
   const revokeDelegation = useCallback(
     async (account: string) => {
       if (!wallet.publicKey) return walletModal.setVisible(true)
-      if (wallet.publicKey.toBase58() !== walletAddress) {
+      if (wallet.publicKey.toBase58() !== walletInput) {
         toast.error("Token Account not owned by the connected wallet!")
         return
       }
@@ -175,10 +182,10 @@ export default function Home() {
 
       <div className="flex flex-col md:flex-row gap-4 items-center justify-center mt-8 mb-8">
         <Input
-          placeholder="8Dyk53...chbe88"
+          placeholder="Wallet Address / Your Domain"
           className="w-64"
-          onChange={(e) => setWalletAddress(e.target.value)}
-          value={walletAddress}
+          onChange={(e) => setWalletInput(e.target.value)}
+          value={walletInput}
         />
 
         <Button
@@ -188,11 +195,11 @@ export default function Home() {
             toast.promise(fetchTokens, {
               loading: "Fetching tokens...",
               success: "Tokens fetched",
-              error: "Error fetching tokens",
+              error: (e) => e.message ?? "Error fetching tokens",
             })
           }
           data-umami-event="Fetch Tokens"
-          data-umami-event-address={walletAddress}
+          data-umami-event-address={walletInput}
         >
           Fetch tokens
         </Button>
@@ -230,7 +237,7 @@ export default function Home() {
                       color="primary"
                       size="sm"
                       data-umami-event="Revoke Delegation"
-                      data-umami-event-address={walletAddress}
+                      data-umami-event-address={walletInput}
                       data-umami-event-token={token.metadata.symbol}
                     >
                       Revoke

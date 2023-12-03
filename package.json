@@ -20,6 +20,7 @@
     "@nextui-org/system": "2.0.15",
     "@nextui-org/table": "^2.0.28",
     "@nextui-org/theme": "2.1.17",
+    "@portal-payments/solana-wallet-names": "^2.1.0",
     "@react-aria/ssr": "^3.8.0",
     "@react-aria/visually-hidden": "^3.8.6",
     "@solana/spl-token": "^0.3.9",
