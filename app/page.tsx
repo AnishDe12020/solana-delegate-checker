@@ -1,6 +1,5 @@
 "use client"
 
-import axios from "axios"
 import { useCallback, useState } from "react"
 import { Button } from "@nextui-org/button"
 import { Input } from "@nextui-org/input"
@@ -14,35 +13,47 @@ import {
   TableRow,
 } from "@nextui-org/table"
 import { button as buttonStyles } from "@nextui-org/theme"
-import { TOKEN_PROGRAM_ID, createRevokeInstruction } from "@solana/spl-token"
+import { walletNameToAddressAndProfilePicture } from "@portal-payments/solana-wallet-names"
+import { createRevokeInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
-import { GetProgramAccountsFilter, PublicKey, Transaction } from "@solana/web3.js"
+import { useWalletModal } from "@solana/wallet-adapter-react-ui"
+import {
+  GetProgramAccountsFilter,
+  PublicKey,
+  Transaction,
+} from "@solana/web3.js"
+import axios from "axios"
 import { toast } from "sonner"
+
 import { siteConfig } from "@/config/site"
 import { GithubIcon, WagmiLogo } from "@/components/icons"
 import { title } from "@/components/primitives"
-import { useWalletModal } from "@solana/wallet-adapter-react-ui"
-
 
 export default function Home() {
-  const wallet = useWallet();
-  const walletModal = useWalletModal();
-  const [walletAddress, setWalletAddress] = useState<string>();
-  const [tokens, setTokens] = useState<any[]>();
+  const wallet = useWallet()
+  const walletModal = useWalletModal()
+  const [walletInput, setWalletInput] = useState<string>()
+  const [tokens, setTokens] = useState<any[]>()
 
-  const { connection } = useConnection();
+  const { connection } = useConnection()
 
   const fetchTokens = async () => {
-    if (!walletAddress) {
-      toast.error("Please enter a valid wallet address")
-      return
+    if (!walletInput) {
+      throw Error("Please enter a valid wallet address")
     }
 
+    let walletAddress
+
     try {
-      new PublicKey(walletAddress)
+      walletAddress = new PublicKey(walletInput).toBase58()
     } catch (e) {
-      toast.error("Please enter a valid wallet address")
-      return
+      walletAddress = (
+        await walletNameToAddressAndProfilePicture(connection, walletInput)
+      ).walletAddress
+
+      if (!walletAddress) {
+        throw Error("Please enter a valid wallet address")
+      }
     }
 
     const filters: GetProgramAccountsFilter[] = [
@@ -108,32 +119,37 @@ export default function Home() {
     setTokens(tokensFilteredWithMetadata)
   }
 
-  const revokeDelegation = useCallback(async (account: string) => {
-    if (!wallet.publicKey) return walletModal.setVisible(true);
-    if (wallet.publicKey.toBase58() !== walletAddress) {
-      toast.error('Token Account not owned by the connected wallet!');
-      return;
-    }
-    async function _revokeDelegation() {
-      if (!wallet.signTransaction || !wallet.publicKey) return;
-      console.log(account);
-      const ata = new PublicKey(account);
-      const revokeInstruction = createRevokeInstruction(ata, wallet.publicKey);
-      const transaction = new Transaction().add(revokeInstruction);
-      const recentBlockhash = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = recentBlockhash.blockhash;
-      transaction.feePayer = wallet.publicKey;
-      const signedTransaction = await wallet.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-      const explorerURL = 'https://explorer.solana.com/tx/' + signature;
-      window.open(explorerURL, '_blank');
-    }
-    toast.promise(_revokeDelegation(), {
-      loading: "Revoking Delegation",
-      success: "Delegation Successfully Removed",
-      error: "Error while sending Transaction"
-    });
-  }, [wallet.publicKey]);
+  const revokeDelegation = useCallback(
+    async (account: string) => {
+      if (!wallet.publicKey) return walletModal.setVisible(true)
+      if (wallet.publicKey.toBase58() !== walletInput) {
+        toast.error("Token Account not owned by the connected wallet!")
+        return
+      }
+      async function _revokeDelegation() {
+        if (!wallet.signTransaction || !wallet.publicKey) return
+        console.log(account)
+        const ata = new PublicKey(account)
+        const revokeInstruction = createRevokeInstruction(ata, wallet.publicKey)
+        const transaction = new Transaction().add(revokeInstruction)
+        const recentBlockhash = await connection.getLatestBlockhash()
+        transaction.recentBlockhash = recentBlockhash.blockhash
+        transaction.feePayer = wallet.publicKey
+        const signedTransaction = await wallet.signTransaction(transaction)
+        const signature = await connection.sendRawTransaction(
+          signedTransaction.serialize()
+        )
+        const explorerURL = "https://explorer.solana.com/tx/" + signature
+        window.open(explorerURL, "_blank")
+      }
+      toast.promise(_revokeDelegation(), {
+        loading: "Revoking Delegation",
+        success: "Delegation Successfully Removed",
+        error: "Error while sending Transaction",
+      })
+    },
+    [wallet.publicKey]
+  )
 
   return (
     <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
@@ -164,12 +180,12 @@ export default function Home() {
         </Link>
       </div>
 
-      <div className="flex flex-row gap-4 items-center justify-center mt-8 mb-8">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-center mt-8 mb-8">
         <Input
-          placeholder="8Dyk53...chbe88"
+          placeholder="Wallet Address / Your Domain"
           className="w-64"
-          onChange={(e) => setWalletAddress(e.target.value)}
-          value={walletAddress}
+          onChange={(e) => setWalletInput(e.target.value)}
+          value={walletInput}
         />
 
         <Button
@@ -179,9 +195,11 @@ export default function Home() {
             toast.promise(fetchTokens, {
               loading: "Fetching tokens...",
               success: "Tokens fetched",
-              error: "Error fetching tokens",
+              error: (e) => e.message ?? "Error fetching tokens",
             })
           }
+          data-umami-event="Fetch Tokens"
+          data-umami-event-address={walletInput}
         >
           Fetch tokens
         </Button>
@@ -212,9 +230,22 @@ export default function Home() {
                 <TableCell>{token.tokenBalance}</TableCell>
                 <TableCell>{token.delegate ?? "N/A"}</TableCell>
                 <TableCell>{token.delegatedAmount ?? "N/A"}</TableCell>
-                <TableCell>{token.delegate ? (
-                  <Button onClick={() => revokeDelegation(token.ata)} color="primary" size="sm">Revoke</Button>
-                ) : "N/A"}</TableCell>
+                <TableCell>
+                  {token.delegate ? (
+                    <Button
+                      onClick={() => revokeDelegation(token.ata)}
+                      color="primary"
+                      size="sm"
+                      data-umami-event="Revoke Delegation"
+                      data-umami-event-address={walletInput}
+                      data-umami-event-token={token.metadata.symbol}
+                    >
+                      Revoke
+                    </Button>
+                  ) : (
+                    "N/A"
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
