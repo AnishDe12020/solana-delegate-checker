@@ -191,6 +191,8 @@ export default function Home() {
               error: "Error fetching tokens",
             })
           }
+          data-umami-event="Fetch Tokens"
+          data-umami-event-address={walletAddress}
         >
           Fetch tokens
         </Button>
@@ -227,6 +229,9 @@ export default function Home() {
                       onClick={() => revokeDelegation(token.ata)}
                       color="primary"
                       size="sm"
+                      data-umami-event="Revoke Delegation"
+                      data-umami-event-address={walletAddress}
+                      data-umami-event-token={token.metadata.symbol}
                     >
                       Revoke
                     </Button>
