@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/table"
+import { Tab, Tabs } from "@nextui-org/tabs"
 import { button as buttonStyles } from "@nextui-org/theme"
 import { walletNameToAddressAndProfilePicture } from "@portal-payments/solana-wallet-names"
 import { createRevokeInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token"
@@ -157,9 +158,9 @@ export default function Home() {
         delegate,
         delegatedAmount,
         metadata: nftMetadatas.find((metadata) => {
-          if (!metadata?.mintAddress) return null
+          if (!(metadata as any).mintAddress) return null
 
-          return metadata.mintAddress.toBase58() === mintAddress
+          return (metadata as any).mintAddress.toBase58() === mintAddress
         }),
       }
     })
@@ -255,94 +256,100 @@ export default function Home() {
         </Button>
       </div>
 
-      {tokens && (
-        <Table aria-label="Tokens">
-          <TableHeader>
-            <TableColumn>Token</TableColumn>
-            <TableColumn>Balance</TableColumn>
-            <TableColumn>Delegate</TableColumn>
-            <TableColumn>Delegated Amount</TableColumn>
-            <TableColumn>Revoke Delegation</TableColumn>
-          </TableHeader>
-          <TableBody>
-            {tokens.map((token) => (
-              <TableRow key={token.mintAddress}>
-                <TableCell className="flex gap-2 items-center">
-                  <img
-                    src={token.metadata.logoURI}
-                    alt={token.metadata.name}
-                    width={32}
-                    height={32}
-                    className="mr-2"
-                  />
-                  <span>{token.metadata.symbol}</span>
-                </TableCell>
-                <TableCell>{token.tokenBalance}</TableCell>
-                <TableCell>{token.delegate ?? "N/A"}</TableCell>
-                <TableCell>{token.delegatedAmount ?? "N/A"}</TableCell>
-                <TableCell>
-                  {token.delegate ? (
-                    <Button
-                      onClick={() => revokeDelegation(token.ata)}
-                      color="primary"
-                      size="sm"
-                      data-umami-event="Revoke Delegation"
-                      data-umami-event-address={walletInput}
-                      data-umami-event-token={token.metadata.symbol}
-                    >
-                      Revoke
-                    </Button>
-                  ) : (
-                    "N/A"
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+      <Tabs aria-label="Tokens" className="w-full">
+        <Tab key="tokens" title="Tokens" className="w-full">
+          {tokens && (
+            <Table aria-label="Tokens">
+              <TableHeader>
+                <TableColumn>Token</TableColumn>
+                <TableColumn>Balance</TableColumn>
+                <TableColumn>Delegate</TableColumn>
+                <TableColumn>Delegated Amount</TableColumn>
+                <TableColumn>Revoke Delegation</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {tokens.map((token) => (
+                  <TableRow key={token.mintAddress}>
+                    <TableCell className="flex gap-2 items-center">
+                      <img
+                        src={token.metadata.logoURI}
+                        alt={token.metadata.name}
+                        width={32}
+                        height={32}
+                        className="mr-2"
+                      />
+                      <span>{token.metadata.symbol}</span>
+                    </TableCell>
+                    <TableCell>{token.tokenBalance}</TableCell>
+                    <TableCell>{token.delegate ?? "N/A"}</TableCell>
+                    <TableCell>{token.delegatedAmount ?? "N/A"}</TableCell>
+                    <TableCell>
+                      {token.delegate ? (
+                        <Button
+                          onClick={() => revokeDelegation(token.ata)}
+                          color="primary"
+                          size="sm"
+                          data-umami-event="Revoke Delegation"
+                          data-umami-event-address={walletInput}
+                          data-umami-event-token={token.metadata.symbol}
+                        >
+                          Revoke
+                        </Button>
+                      ) : (
+                        "N/A"
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Tab>
 
-      {nfts && (
-        <Table aria-label="NFTs">
-          <TableHeader>
-            <TableColumn>NFT</TableColumn>
-            <TableColumn>Balance</TableColumn>
-            <TableColumn>Delegate</TableColumn>
-            <TableColumn>Delegated Amount</TableColumn>
-            <TableColumn>Revoke Delegation</TableColumn>
-          </TableHeader>
+        <Tab key="nfts" title="NFTs" className="w-full">
+          {nfts && (
+            <Table aria-label="NFTs">
+              <TableHeader>
+                <TableColumn>NFT</TableColumn>
+                <TableColumn>Balance</TableColumn>
+                <TableColumn>Delegate</TableColumn>
+                <TableColumn>Delegated Amount</TableColumn>
+                <TableColumn>Revoke Delegation</TableColumn>
+              </TableHeader>
 
-          <TableBody>
-            {nfts.map((token) => (
-              <TableRow key={token.mintAddress}>
-                <TableCell className="flex gap-2 items-center">
-                  <NFTImage token={token} />
-                  <span>{token.metadata?.name}</span>
-                </TableCell>
-                <TableCell>{token.tokenBalance}</TableCell>
-                <TableCell>{token.delegate ?? "N/A"}</TableCell>
-                <TableCell>{token.delegatedAmount ?? "N/A"}</TableCell>
-                <TableCell>
-                  {token.delegate ? (
-                    <Button
-                      onClick={() => revokeDelegation(token.ata)}
-                      color="primary"
-                      size="sm"
-                      data-umami-event="Revoke Delegation"
-                      data-umami-event-address={walletInput}
-                      data-umami-event-token={token.metadata?.name}
-                    >
-                      Revoke
-                    </Button>
-                  ) : (
-                    "N/A"
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+              <TableBody>
+                {nfts.map((token) => (
+                  <TableRow key={token.mintAddress}>
+                    <TableCell className="flex gap-2 items-center">
+                      <NFTImage token={token} />
+                      <span>{token.metadata?.name}</span>
+                    </TableCell>
+                    <TableCell>{token.tokenBalance}</TableCell>
+                    <TableCell>{token.delegate ?? "N/A"}</TableCell>
+                    <TableCell>{token.delegatedAmount ?? "N/A"}</TableCell>
+                    <TableCell>
+                      {token.delegate ? (
+                        <Button
+                          onClick={() => revokeDelegation(token.ata)}
+                          color="primary"
+                          size="sm"
+                          data-umami-event="Revoke Delegation"
+                          data-umami-event-address={walletInput}
+                          data-umami-event-token={token.metadata?.name}
+                        >
+                          Revoke
+                        </Button>
+                      ) : (
+                        "N/A"
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Tab>
+      </Tabs>
     </section>
   )
 }
