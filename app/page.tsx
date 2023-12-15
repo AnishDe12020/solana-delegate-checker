@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useState } from "react"
+import { Metaplex } from "@metaplex-foundation/js"
 import { Button } from "@nextui-org/button"
 import { Input } from "@nextui-org/input"
 import { Link } from "@nextui-org/link"
@@ -27,6 +28,7 @@ import { toast } from "sonner"
 
 import { siteConfig } from "@/config/site"
 import { GithubIcon, WagmiLogo } from "@/components/icons"
+import NFTImage from "@/components/nft-image"
 import { title } from "@/components/primitives"
 
 export default function Home() {
@@ -34,6 +36,7 @@ export default function Home() {
   const walletModal = useWalletModal()
   const [walletInput, setWalletInput] = useState<string>()
   const [tokens, setTokens] = useState<any[]>()
+  const [nfts, setNfts] = useState<any[]>()
 
   const { connection } = useConnection()
 
@@ -117,6 +120,53 @@ export default function Home() {
     console.log(tokensFilteredWithMetadata)
 
     setTokens(tokensFilteredWithMetadata)
+
+    const nftTokens = accounts.filter((account) => {
+      const parsedAccountInfo: any = account.account.data
+      const decimals = parsedAccountInfo.parsed.info.tokenAmount.decimals
+
+      return decimals === 0 && parsedAccountInfo.parsed.info.delegate
+    })
+
+    const metaplex = new Metaplex(connection)
+
+    const nftMetadatas = await metaplex.nfts().findAllByMintList({
+      mints: nftTokens.map((account) => {
+        const parsedAccountInfo: any = account.account.data
+
+        const mintAddress: string = parsedAccountInfo.parsed.info.mint
+
+        return new PublicKey(mintAddress)
+      }),
+    })
+
+    const nftTokensParsed = nftTokens.map((account) => {
+      const parsedAccountInfo: any = account.account.data
+
+      const mintAddress: string = parsedAccountInfo.parsed.info.mint
+      const tokenBalance: number =
+        parsedAccountInfo.parsed.info.tokenAmount.uiAmount
+      const delegate = parsedAccountInfo.parsed.info.delegate
+      const delegatedAmount: number =
+        parsedAccountInfo.parsed.info.delegatedAmount?.uiAmount
+
+      return {
+        mintAddress,
+        tokenBalance,
+        ata: account.pubkey.toBase58(),
+        delegate,
+        delegatedAmount,
+        metadata: nftMetadatas.find((metadata) => {
+          if (!metadata?.mintAddress) return null
+
+          return metadata.mintAddress.toBase58() === mintAddress
+        }),
+      }
+    })
+
+    console.log(nftMetadatas, nftTokensParsed)
+
+    setNfts(nftTokensParsed)
   }
 
   const revokeDelegation = useCallback(
@@ -239,6 +289,48 @@ export default function Home() {
                       data-umami-event="Revoke Delegation"
                       data-umami-event-address={walletInput}
                       data-umami-event-token={token.metadata.symbol}
+                    >
+                      Revoke
+                    </Button>
+                  ) : (
+                    "N/A"
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+
+      {nfts && (
+        <Table aria-label="NFTs">
+          <TableHeader>
+            <TableColumn>NFT</TableColumn>
+            <TableColumn>Balance</TableColumn>
+            <TableColumn>Delegate</TableColumn>
+            <TableColumn>Delegated Amount</TableColumn>
+            <TableColumn>Revoke Delegation</TableColumn>
+          </TableHeader>
+
+          <TableBody>
+            {nfts.map((token) => (
+              <TableRow key={token.mintAddress}>
+                <TableCell className="flex gap-2 items-center">
+                  <NFTImage token={token} />
+                  <span>{token.metadata?.name}</span>
+                </TableCell>
+                <TableCell>{token.tokenBalance}</TableCell>
+                <TableCell>{token.delegate ?? "N/A"}</TableCell>
+                <TableCell>{token.delegatedAmount ?? "N/A"}</TableCell>
+                <TableCell>
+                  {token.delegate ? (
+                    <Button
+                      onClick={() => revokeDelegation(token.ata)}
+                      color="primary"
+                      size="sm"
+                      data-umami-event="Revoke Delegation"
+                      data-umami-event-address={walletInput}
+                      data-umami-event-token={token.metadata?.name}
                     >
                       Revoke
                     </Button>
