@@ -256,7 +256,7 @@ export default function Home() {
         </Button>
       </div>
 
-      <Tabs aria-label="Tokens" className="w-full">
+      <Tabs aria-label="Tokens" className="w-full justify-center">
         <Tab key="tokens" title="Tokens" className="w-full">
           {tokens && (
             <Table aria-label="Tokens">
